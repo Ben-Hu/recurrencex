@@ -90,17 +90,20 @@ defmodule Recurrencex do
     cond do
       day_shift <= 0 ->
         shifted_date = Timex.shift(date, [days: day_shift, months: recurrencex.frequency])
-        if shifted_date.month == rem(date.month + recurrencex.frequency, 12) do
-          shifted_date
-        else
-          Timex.shift(shifted_date, [days: -3])
-          |> Timex.end_of_month
-          |> Timex.set([
-            hour: date.hour,
-            minute: date.minute,
-            second: date.second,
-            microsecond: date.microsecond
-          ])
+        cond do
+          shifted_date.month == 12 and rem(date.month + recurrencex.frequency, 12) == 0 ->
+            shifted_date
+          shifted_date.month == rem(date.month + recurrencex.frequency, 12) ->
+            shifted_date
+          true ->
+            Timex.shift(shifted_date, [days: -3])
+            |> Timex.end_of_month
+            |> Timex.set([
+              hour: date.hour,
+              minute: date.minute,
+              second: date.second,
+              microsecond: date.microsecond
+            ])
         end
       day_shift > 0 ->
         Timex.shift(date, [days: day_shift])
@@ -169,5 +172,4 @@ defmodule Recurrencex do
     sequence
     |> Enum.find(Enum.at(sequence, 0), fn x -> x > base end)
   end
-
 end
