@@ -31,10 +31,10 @@ defmodule RecurrencexTest do
     end
 
     test "date matches" do
-      date = Timex.to_datetime({{2018, 4, 1}, {0, 0, 0}}, "America/Toronto")
+      date = Timex.to_datetime({{2018, 11, 4}, {0, 0, 0}}, "America/Toronto")
       r = %Recurrencex{type: :monthly_day, frequency: 1, repeat_on: [1]}
       next = Recurrencex.next(date, r)
-      assert next == Timex.to_datetime({{2018, 5, 1}, {0, 0, 0}}, "America/Toronto")
+      assert next == Timex.to_datetime({{2018, 12, 1}, {0, 0, 0}}, "America/Toronto")
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule Recurrex.MixProject do
+defmodule Recurrencex.MixProject do
   use Mix.Project
 
   def project do
