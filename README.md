@@ -8,7 +8,7 @@ To use Recurrencex with your projects, add it as a dependency in your mix.exs fi
 ```elixir
 def deps do
   [
-    {:recurrencex, "~> 0.1.0"}
+    {:recurrencex, "~> 0.2.0"}
   ]
 end
 ```
