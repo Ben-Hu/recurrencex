@@ -17,10 +17,10 @@ defmodule Recurrencex do
   ]
 
   @type t :: %__MODULE__{
-    type: atom,
-    frequency: integer,
-    repeat_on: [integer] | [{integer, integer}]
-  }
+          type: atom,
+          frequency: integer,
+          repeat_on: [integer] | [{integer, integer}]
+        }
 
   @doc """
   A function that finds the date of the next occurence after 'date' with recurrence 'recurrencex'
@@ -71,42 +71,62 @@ defmodule Recurrencex do
   end
 
   defp next_occurence(date, %Recurrencex{type: :daily} = recurrencex) do
-    Timex.shift(date, [days: recurrencex.frequency])
+    Timex.shift(date, days: recurrencex.frequency)
   end
 
   defp next_occurence(date, %Recurrencex{type: :weekly} = recurrencex) do
     dow = Timex.weekday(date)
-    day_shift = next_in_sequence(dow, Enum.sort(recurrencex.repeat_on)) - dow
+    day_shift = next_in_sequence(dow, recurrencex.repeat_on) - dow
+
     cond do
       day_shift <= 0 ->
-        Timex.shift(date, [days: day_shift, weeks: recurrencex.frequency])
+        Timex.shift(date, days: day_shift, weeks: recurrencex.frequency)
+
       day_shift > 0 ->
-        Timex.shift(date, [days: day_shift])
+        Timex.shift(date, days: day_shift)
     end
   end
 
   defp next_occurence(date, %Recurrencex{type: :monthly_day} = recurrencex) do
-    day_shift = next_in_sequence(date.day, Enum.sort(recurrencex.repeat_on)) - date.day
+    next_day = next_in_sequence(date.day, recurrencex.repeat_on)
+    day_shift = next_day - date.day
+
     cond do
       day_shift <= 0 ->
-        shifted_date = Timex.shift(date, [days: day_shift, months: recurrencex.frequency])
+        shifted_date = Timex.shift(date, days: day_shift, months: recurrencex.frequency)
+
         cond do
           shifted_date.month == 12 and rem(date.month + recurrencex.frequency, 12) == 0 ->
             shifted_date
+
           shifted_date.month == rem(date.month + recurrencex.frequency, 12) ->
             shifted_date
+
           true ->
-            Timex.shift(shifted_date, [days: -3])
-            |> Timex.end_of_month
-            |> Timex.set([
+            Timex.shift(shifted_date, days: -3)
+            |> Timex.end_of_month()
+            |> Timex.set(
               hour: date.hour,
               minute: date.minute,
               second: date.second,
               microsecond: date.microsecond
-            ])
+            )
         end
+
+      day_shift > 0 and next_day <= Timex.days_in_month(date) ->
+        Timex.shift(date, days: day_shift)
+
       day_shift > 0 ->
-        Timex.shift(date, [days: day_shift])
+        date
+        |> Timex.end_of_month()
+        |> Timex.set(
+          hour: date.hour,
+          minute: date.minute,
+          second: date.second,
+          microsecond: date.microsecond
+        )
+        |> Timex.shift(days: 1)
+        |> next_occurence(recurrencex)
     end
   end
 
@@ -114,25 +134,30 @@ defmodule Recurrencex do
     base_pair = {Timex.weekday(date), nth_dow(date)}
     repeat_on = Enum.sort(recurrencex.repeat_on, fn {_a, b}, {_x, y} -> b < y end)
     {dow, n} = next_in_tuple_sequence(base_pair, repeat_on, Timex.beginning_of_month(date))
+
     cond do
       n >= nth_dow(date) ->
         date_of_nth_dow(Timex.beginning_of_month(date), dow, n)
+
       n < nth_dow(date) ->
-        shifted_date = Timex.shift(date, [months: recurrencex.frequency])
+        shifted_date = Timex.shift(date, months: recurrencex.frequency)
+
         if shifted_date.month == date.month + recurrencex.frequency do
           date_of_nth_dow(Timex.beginning_of_month(shifted_date), dow, n)
         else
           # Offset by 3 to be safe we don't skip a month (February/30/31th) because of the way
           # Timex shifts by months
-          start_date = shifted_date
-          |> Timex.shift([days: -3])
-          |> Timex.beginning_of_month
-          |> Timex.set([
-            hour: date.hour,
-            minute: date.minute,
-            second: date.second,
-            microsecond: date.microsecond
-          ])
+          start_date =
+            shifted_date
+            |> Timex.shift(days: -3)
+            |> Timex.beginning_of_month()
+            |> Timex.set(
+              hour: date.hour,
+              minute: date.minute,
+              second: date.second,
+              microsecond: date.microsecond
+            )
+
           date_of_nth_dow(start_date, dow, n)
         end
     end
@@ -141,8 +166,8 @@ defmodule Recurrencex do
   defp date_of_nth_dow(date, dow, n) do
     cond do
       Timex.weekday(date) == dow and n == 1 -> date
-      Timex.weekday(date) == dow -> date_of_nth_dow(Timex.shift(date, [weeks: 1]), dow, n - 1)
-      Timex.weekday(date) != dow -> date_of_nth_dow(Timex.shift(date, [days: 1]), dow, n)
+      Timex.weekday(date) == dow -> date_of_nth_dow(Timex.shift(date, weeks: 1), dow, n - 1)
+      Timex.weekday(date) != dow -> date_of_nth_dow(Timex.shift(date, days: 1), dow, n)
     end
   end
 
@@ -157,19 +182,24 @@ defmodule Recurrencex do
 
   defp next_in_tuple_sequence(base, sequence, date) do
     {base_x, base_y} = base
+
     sequence
     |> Enum.find(Enum.at(sequence, 0), fn {x, y} ->
       cond do
         y == base_y ->
           Timex.compare(date_of_nth_dow(date, base_x, base_y), date_of_nth_dow(date, x, y)) == -1
-        y > base_y -> true
-        y < base_y -> false
+
+        y > base_y ->
+          true
+
+        y < base_y ->
+          false
       end
     end)
   end
 
   defp next_in_sequence(base, sequence) do
-    sequence
-    |> Enum.find(Enum.at(sequence, 0), fn x -> x > base end)
+    [sequence_head | _] = sorted_sequence = Enum.sort(sequence)
+    Enum.find(sorted_sequence, sequence_head, fn x -> x > base end)
   end
 end

@@ -4,20 +4,19 @@ defmodule Recurrencex.MixProject do
   def project do
     [
       app: :recurrencex,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
       docs: docs(),
       deps: deps(),
-      test: test(),
+      test: test()
     ]
   end
 
   def application do
     [
       extra_applications: [
-        :logger,
         :timex
       ]
     ]
@@ -43,7 +42,7 @@ defmodule Recurrencex.MixProject do
       files: ["lib", "mix.exs", "README.md", "LICENSE.md"],
       maintainers: ["Ben Hu"],
       licenses: ["MIT"],
-      links: %{ "GitHub": "https://github.com/Ben-Hu/recurrencex" }
+      links: %{GitHub: "https://github.com/Ben-Hu/recurrencex"}
     ]
   end
 
@@ -61,12 +60,11 @@ defmodule Recurrencex.MixProject do
     [
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
-        "coveralls": :test,
+        coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
       ]
     ]
   end
-
 end
