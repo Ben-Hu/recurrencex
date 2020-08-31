@@ -10,7 +10,7 @@ defmodule Recurrencex.MixProject do
       package: package(),
       docs: docs(),
       deps: deps(),
-      test: test(),
+      test: test()
     ]
   end
 
@@ -43,7 +43,7 @@ defmodule Recurrencex.MixProject do
       files: ["lib", "mix.exs", "README.md", "LICENSE.md"],
       maintainers: ["Ben Hu"],
       licenses: ["MIT"],
-      links: %{ "GitHub": "https://github.com/Ben-Hu/recurrencex" }
+      links: %{GitHub: "https://github.com/Ben-Hu/recurrencex"}
     ]
   end
 
@@ -61,12 +61,11 @@ defmodule Recurrencex.MixProject do
     [
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
-        "coveralls": :test,
+        coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
       ]
     ]
   end
-
 end

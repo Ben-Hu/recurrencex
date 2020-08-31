@@ -25,9 +25,13 @@ defmodule RecurrencexTest do
 
     test "month rollover" do
       date = Timex.to_datetime({{2018, 1, 31}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{frequency: 1, repeat_on: [30], type: :monthly_day}
-      next = Recurrencex.next(date, r)
-      assert next === Timex.to_datetime({{2018, 2, 28}, {0, 0, 0}}, "America/Toronto")
+      r = %Recurrencex{frequency: 1, repeat_on: [31], type: :monthly_day}
+
+      next_1 = Recurrencex.next(date, r)
+      assert next_1 == Timex.to_datetime({{2018, 2, 28}, {0, 0, 0}}, "America/Toronto")
+
+      next_2 = Recurrencex.next(next_1, r)
+      assert next_2 == Timex.to_datetime({{2018, 3, 31}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "date matches" do
@@ -41,49 +45,49 @@ defmodule RecurrencexTest do
   describe "monthly_dow" do
     test "day < all repeat_on" do
       date = Timex.to_datetime({{2018, 1, 14}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 2, repeat_on: [{5,4}, {4,3}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 2, repeat_on: [{5, 4}, {4, 3}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 1, 18}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "day inbetween repeat_on" do
       date = Timex.to_datetime({{2018, 1, 14}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 2, repeat_on: [{1,1}, {5,4}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 2, repeat_on: [{1, 1}, {5, 4}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 1, 26}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "day > all repeat_on month rollover" do
       date = Timex.to_datetime({{2018, 1, 31}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 1, repeat_on: [{3,4}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 1, repeat_on: [{3, 4}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 2, 28}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "day > all repeat_on 6mo freq" do
       date = Timex.to_datetime({{2018, 1, 31}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{3,4}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{3, 4}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 7, 25}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "repeat_on sequence order" do
       date = Timex.to_datetime({{2018, 4, 1}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{1,2}, {2,1}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{1, 2}, {2, 1}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 4, 3}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "date matches 1" do
       date = Timex.to_datetime({{2018, 4, 1}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{7,1}, {2,1}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{7, 1}, {2, 1}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 4, 3}, {0, 0, 0}}, "America/Toronto")
     end
 
     test "date matches 2" do
       date = Timex.to_datetime({{2018, 4, 1}, {0, 0, 0}}, "America/Toronto")
-      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{2,1}, {7,1}]}
+      r = %Recurrencex{type: :monthly_dow, frequency: 6, repeat_on: [{2, 1}, {7, 1}]}
       next = Recurrencex.next(date, r)
       assert next == Timex.to_datetime({{2018, 4, 3}, {0, 0, 0}}, "America/Toronto")
     end
@@ -112,7 +116,7 @@ defmodule RecurrencexTest do
     end
 
     test "dow > all repeat on", %{base_date: base_date} do
-      r = %Recurrencex{frequency: 3, repeat_on: [1, 2, 3,4], type: :weekly}
+      r = %Recurrencex{frequency: 3, repeat_on: [1, 2, 3, 4], type: :weekly}
       next = Recurrencex.next(base_date, r)
       assert next === Timex.to_datetime({{2018, 5, 7}, {0, 0, 0}}, "America/Toronto")
     end
@@ -129,7 +133,6 @@ defmodule RecurrencexTest do
       next = Recurrencex.next(base_date, r)
       assert next === Timex.to_datetime({{2018, 4, 27}, {0, 0, 0}}, "America/Toronto")
     end
-
   end
 
   describe "daily" do
@@ -152,5 +155,4 @@ defmodule RecurrencexTest do
     base_date = Timex.to_datetime({{2018, 4, 20}, {0, 0, 0}}, "America/Toronto")
     context |> Map.put(:base_date, base_date)
   end
-
 end
